@@ -16,6 +16,12 @@
         android:theme="@style/Theme.VitalogFinal"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".view.menu.diario.FormularioAlimentoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.menu.diario.PesquisaAlimentoActivity"
+            android:exported="false" />
+        <activity
             android:name=".view.menu.diario.CriarGrupoActivity"
             android:exported="false" />
         <activity

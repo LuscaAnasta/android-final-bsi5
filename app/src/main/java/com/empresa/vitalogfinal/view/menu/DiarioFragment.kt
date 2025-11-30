@@ -38,7 +38,7 @@ class DiarioFragment : Fragment() {
     private lateinit var adapter: DiarioAdapter
 
     private var selectedDate: LocalDate = LocalDate.now()
-    private val usuarioId = 1 // depois você coloca o id real do usuário logado
+    private var usuarioId = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,6 +49,15 @@ class DiarioFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val prefs = requireActivity().getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+        usuarioId = prefs.getInt("user_id", 0)
+
+        if (usuarioId == 0) {
+            Toast.makeText(requireContext(), "Erro de sessão. Faça login novamente.", Toast.LENGTH_LONG).show()
+            requireActivity().finish()
+            return
+        }
 
         val btnPrev = view.findViewById<Button>(R.id.btn_prev_day)
         val btnNext = view.findViewById<Button>(R.id.btn_next_day)
@@ -132,6 +141,13 @@ class DiarioFragment : Fragment() {
         intent.putExtra("grupoId", grupo.id)
         intent.putExtra("grupoNome", grupo.nome)
         startActivity(intent)
+    }
+
+    // Adicione este método dentro da classe DiarioFragment
+    override fun onResume() {
+        super.onResume()
+        // Força a atualização da lista sempre que a tela voltar a aparecer
+        carregarDiaAtual()
     }
 }
 

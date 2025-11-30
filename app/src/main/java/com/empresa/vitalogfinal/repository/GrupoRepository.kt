@@ -1,6 +1,5 @@
 package com.empresa.vitalogfinal.repository
 
-
 import com.empresa.vitalogfinal.model.diario.FoodModel
 import com.empresa.vitalogfinal.model.diario.GrupoModel
 import com.empresa.vitalogfinal.service.GrupoService
@@ -14,10 +13,12 @@ class GrupoRepository(private val api: GrupoService) {
 
     suspend fun getAlimentos(grupoId: Int): List<FoodModel> {
         val res = api.getAlimentos(grupoId)
+        // Se a lista vier nula, retorna lista vazia para não quebrar o app
         return if (res.isSuccessful) res.body() ?: emptyList() else emptyList()
     }
 
     suspend fun apagarGrupo(id: Int): Boolean {
+        // isSuccessful retorna true se o código for 200-299
         return api.deleteGrupo(id).isSuccessful
     }
 

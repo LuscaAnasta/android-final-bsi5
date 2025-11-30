@@ -65,9 +65,15 @@ async function apagarGrupo(id) {
     return queryPromise(`DELETE FROM grupo_alimentos_usuario WHERE id = ${id}`);
 }
 
+async function buscarGrupoPorId(id) {
+    let sql = `SELECT * FROM grupo_alimentos_usuario WHERE id = ${id}`;
+    return queryPromise(sql);
+}
+
 module.exports = {
     listarGrupos,
     listarAlimentos,
     criarGrupo,
-    apagarGrupo
-};
+    apagarGrupo,
+    buscarGrupoPorId }
+    

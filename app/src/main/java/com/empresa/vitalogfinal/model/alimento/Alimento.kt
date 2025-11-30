@@ -1,31 +1,17 @@
 package com.empresa.vitalogfinal.model.alimento
 
-class Alimento {
-    private var id : Int
-        get() {
-            TODO()
-        }
-        set(value) {}
-    private var nome : String
-        get() {
-            TODO()
-        }
-        set(value) {}
-    private var porcao : String
-        get() {
-            TODO()
-        }
-        set(value) {}
-    private var caloria : String
-        get() {
-            TODO()
-        }
-        set(value) {}
-    constructor()
-    constructor(id: Int, nome: String, porcao: String, caloria: String) {
-        this.id = id
-        this.nome = nome
-        this.porcao = porcao
-        this.caloria = caloria
-    }
-}
+import com.google.gson.annotations.SerializedName
+
+// Este model representa o resultado da pesquisa na tabela base (catálogo)
+data class Alimento(
+    val id: Int,
+    val nome: String,
+
+    // Usamos Double pois faremos contas matemáticas
+    // O SerializedName garante que o Retrofit entenda mesmo se o JSON vier com outro nome
+    @SerializedName("caloria", alternate = ["caloria_base", "calorias"])
+    val caloria: Double,
+
+    @SerializedName("porcao", alternate = ["porcao_base", "tamanho_porcao"])
+    val porcao: Double
+)

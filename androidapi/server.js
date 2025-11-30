@@ -174,6 +174,34 @@ app.post('/diario/:usuarioId/grupo', async (req, res) => {
     }
 });
 
+app.get('/alimentos/pesquisa', async (req, res) => {
+    try {
+        const termo = req.query.q; // ex: ?q=arroz
+        if (!termo) return res.status(400).send({ message: "Termo de busca vazio." });
+        
+        const result = await alimento.buscarAlimentosBase(termo);
+        return res.status(200).send(result);
+    } catch (err) {
+        return res.status(500).send({ message: "Erro ao buscar alimentos." });
+    }
+});
+
+app.get('/grupo/:id', async (req, res) => {
+    try {
+        const result = await diario.buscarGrupoPorId(req.params.id);
+        
+        if (result.length > 0) {
+            // Retorna apenas o objeto (o primeiro da lista), pois o Android espera um objeto, não um array
+            return res.status(200).send(result[0]); 
+        } else {
+            return res.status(404).send({ message: "Grupo não encontrado." });
+        }
+    } catch (err) {
+        console.error(err); // Bom para debug no terminal
+        return res.status(500).send({ message: "Erro ao buscar grupo." });
+    }
+});
+
 app.listen(port, () => {
     console.log(`API rodando: http://localhost:${port}`);
 });

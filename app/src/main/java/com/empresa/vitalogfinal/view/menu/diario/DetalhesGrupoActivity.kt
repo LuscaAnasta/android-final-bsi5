@@ -1,13 +1,13 @@
 package com.empresa.vitalogfinal.view.menu.diario
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.empresa.vitalogfinal.R
 import com.empresa.vitalogfinal.credenciais.Credenciais
 import com.empresa.vitalogfinal.model.diario.FoodModel
-import com.empresa.vitalogfinal.model.diario.GrupoModel
 import com.empresa.vitalogfinal.repository.GrupoRepository
 import com.empresa.vitalogfinal.service.GrupoService
 import com.empresa.vitalogfinal.view.menu.ui.DetalhesGrupoViewModel
@@ -36,7 +35,7 @@ class DetalhesGrupoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detalhes_grupo)
 
-        // pegar dados da intent
+        // 1. Pegar dados da intent
         grupoId = intent.getIntExtra("grupoId", 0)
         grupoNome = intent.getStringExtra("grupoNome") ?: ""
 
@@ -44,65 +43,140 @@ class DetalhesGrupoActivity : AppCompatActivity() {
         val recycler = findViewById<RecyclerView>(R.id.recycler_alimentos)
         val btnAdd = findViewById<Button>(R.id.btn_add_alimento)
         val btnApagarGrupo = findViewById<Button>(R.id.btn_apagar_grupo)
-
         val btnVoltar = findViewById<Button>(R.id.btn_voltar)
+
+        txtNomeGrupo.text = grupoNome
+
+        // 2. Configurar Botão Voltar
         btnVoltar.setOnClickListener {
             finish()
         }
 
-        txtNomeGrupo.text = grupoNome
-
+        // 3. Configurar Adapter e RecyclerView
+        // AQUI MUDOU: O clique agora chama a função de confirmação de exclusão
         adapter = AlimentosAdapter(emptyList()) { alimento ->
-            editarAlimento(alimento)
+            confirmarExclusaoAlimento(alimento)
         }
+
+        recycler.adapter = adapter
+        recycler.layoutManager = LinearLayoutManager(this)
+
+        // 4. Configurar ViewModel
         val cred = Credenciais()
         val retrofit = Retrofit.Builder()
             .baseUrl(cred.ip)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        recycler.adapter = adapter
-        recycler.layoutManager = LinearLayoutManager(this)
-
         viewModel = ViewModelProvider(
             this,
-            DetalhesGrupoViewModelFactory(GrupoRepository(retrofit.create(
-                GrupoService::class.java)))
+            DetalhesGrupoViewModelFactory(GrupoRepository(retrofit.create(GrupoService::class.java)))
         )[DetalhesGrupoViewModel::class.java]
 
+        // 5. Observar mudanças na lista
         viewModel.alimentos.observe(this) { lista ->
             adapter.update(lista)
         }
 
-
-        // Carregar dados
-        lifecycleScope.launch {
-            viewModel.carregar(grupoId)
-        }
-
-
+        // 6. Ação do Botão Adicionar
         btnAdd.setOnClickListener {
             adicionarAlimento()
         }
 
+        // 7. Ação do Botão Apagar Grupo
         btnApagarGrupo.setOnClickListener {
+            confirmarExclusaoGrupo()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        carregarDados()
+    }
+
+    private fun carregarDados() {
+        if (grupoId != 0) {
             lifecycleScope.launch {
-                val ok = viewModel.apagarGrupo(grupoId)
-                if (ok) {
-                    Toast.makeText(this@DetalhesGrupoActivity, "Grupo apagado!", Toast.LENGTH_SHORT).show()
-                    finish()
-                }
+                viewModel.carregar(grupoId)
             }
         }
     }
 
-    private fun editarAlimento(alimento: FoodModel) {
-        Toast.makeText(this, "Editar ${alimento.nome}", Toast.LENGTH_SHORT).show()
-        // abrir EditAlimentoActivity (criamos já já)
+    private fun adicionarAlimento() {
+        val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val usuarioId = prefs.getInt("user_id", 0)
+
+        if (usuarioId == 0) {
+            Toast.makeText(this, "Erro: Usuário não identificado.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val intent = Intent(this, PesquisaAlimentoActivity::class.java)
+        intent.putExtra("usuarioId", usuarioId)
+        intent.putExtra("grupoId", grupoId)
+        startActivity(intent)
     }
 
-    private fun adicionarAlimento() {
-        Toast.makeText(this, "Adicionar alimento", Toast.LENGTH_SHORT).show()
-        // abrir AddAlimentoActivity (próximo passo)
+    // ==========================================
+    // NOVA FUNÇÃO: DIALOGO PARA APAGAR ALIMENTO
+    // ==========================================
+    private fun confirmarExclusaoAlimento(alimento: FoodModel) {
+        AlertDialog.Builder(this)
+            .setTitle("Excluir Alimento")
+            .setMessage("Deseja remover '${alimento.nome}' deste grupo?")
+            .setPositiveButton("Apagar") { _, _ ->
+                executarExclusaoAlimento(alimento.id)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun executarExclusaoAlimento(alimentoId: Int) {
+        lifecycleScope.launch {
+            try {
+                val sucesso = viewModel.apagarAlimento(alimentoId)
+                if (sucesso) {
+                    Toast.makeText(this@DetalhesGrupoActivity, "Alimento removido!", Toast.LENGTH_SHORT).show()
+                    // Recarrega a lista para o alimento sumir da tela
+                    carregarDados()
+                } else {
+                    Toast.makeText(this@DetalhesGrupoActivity, "Erro ao remover alimento.", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this@DetalhesGrupoActivity, "Erro de conexão.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // ==========================================
+    // DIALOGO PARA APAGAR O GRUPO INTEIRO
+    // ==========================================
+    private fun confirmarExclusaoGrupo() {
+        AlertDialog.Builder(this)
+            .setTitle("Excluir Grupo")
+            .setMessage("Tem certeza que deseja apagar o grupo '$grupoNome'? Todos os alimentos serão perdidos.")
+            .setPositiveButton("Sim, Apagar") { _, _ ->
+                executarExclusaoGrupo()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun executarExclusaoGrupo() {
+        lifecycleScope.launch {
+            try {
+                val sucesso = viewModel.apagarGrupo(grupoId)
+                if (sucesso) {
+                    Toast.makeText(this@DetalhesGrupoActivity, "Grupo removido!", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    Toast.makeText(this@DetalhesGrupoActivity, "Erro ao apagar grupo.", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this@DetalhesGrupoActivity, "Erro de conexão.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

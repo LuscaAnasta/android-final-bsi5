@@ -36,8 +36,19 @@ async function apagarAlimento(id) {
     return queryPromise(`DELETE FROM tb_alimentos_usuario WHERE id=${id}`);
 }
 
+async function buscarAlimentosBase(termo) {
+    // Atenção: Usei LIKE para buscar partes do nome
+    let sql = `
+        SELECT * FROM tb_alimentos 
+        WHERE nome LIKE '%${termo}%' 
+        LIMIT 20
+    `;
+    return queryPromise(sql);
+}
+
 module.exports = {
     adicionarAlimento,
     editarAlimento,
-    apagarAlimento
+    apagarAlimento,
+    buscarAlimentosBase
 }
