@@ -3,9 +3,10 @@ package com.empresa.vitalogfinal.model.usuario
 data class Usuario(
     val id: Int,
     val nome: String,
-    val sobrenome: String,
     val email: String,
-    val senha: String,
-    val cpf: String,
-    val data_nascimento: String
+    // Campos opcionais (podem vir null do banco)
+    val sobrenome: String?,
+    val peso: Double?,
+    val altura: Double?,
+    val data_nascimento: String?
 )

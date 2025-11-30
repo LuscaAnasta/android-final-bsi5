@@ -1,13 +1,14 @@
-package com.empresa.vitalogfinal.view.menu  // ajuste se necessário
+package com.empresa.vitalogfinal.view.menu
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.SimpleAdapter
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -18,9 +19,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.empresa.vitalogfinal.R
 import com.empresa.vitalogfinal.credenciais.Credenciais
 import com.empresa.vitalogfinal.model.diario.GrupoModel
-
 import com.empresa.vitalogfinal.repository.DiarioRepository
+import com.empresa.vitalogfinal.repository.MetaRepository // <--- Importe
 import com.empresa.vitalogfinal.service.DiarioService
+import com.empresa.vitalogfinal.service.MetaService // <--- Importe
 import com.empresa.vitalogfinal.view.menu.diario.CriarGrupoActivity
 import com.empresa.vitalogfinal.view.menu.diario.DetalhesGrupoActivity
 import com.empresa.vitalogfinal.view.menu.diario.DiarioAdapter
@@ -31,7 +33,6 @@ import org.threeten.bp.LocalDate
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-
 class DiarioFragment : Fragment() {
 
     private lateinit var viewModel: DiarioViewModel
@@ -40,56 +41,75 @@ class DiarioFragment : Fragment() {
     private var selectedDate: LocalDate = LocalDate.now()
     private var usuarioId = 0
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_diario, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val prefs = requireActivity().getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+        // 1. Recupera ID
+        val prefs = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         usuarioId = prefs.getInt("user_id", 0)
 
-        if (usuarioId == 0) {
-            Toast.makeText(requireContext(), "Erro de sessão. Faça login novamente.", Toast.LENGTH_LONG).show()
-            requireActivity().finish()
-            return
-        }
-
+        // Referências Visuais
         val btnPrev = view.findViewById<Button>(R.id.btn_prev_day)
         val btnNext = view.findViewById<Button>(R.id.btn_next_day)
         val btnAddGrupo = view.findViewById<Button>(R.id.btn_add_grupo)
         val txtDate = view.findViewById<TextView>(R.id.txt_selected_date)
         val recycler = view.findViewById<RecyclerView>(R.id.recycler_diario)
 
-        adapter = DiarioAdapter(emptyList()) { grupo ->
-            abrirDetalhesGrupo(grupo)
-        }
+        // Novos campos de progresso
+        val txtResumo = view.findViewById<TextView>(R.id.txt_resumo_calorias)
+        val progressBar = view.findViewById<ProgressBar>(R.id.progress_calorias)
 
+        // Configuração Retrofit
         val cred = Credenciais()
         val retrofit = Retrofit.Builder()
             .baseUrl(cred.ip)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        recycler.layoutManager = LinearLayoutManager(requireContext())
-        recycler.adapter = adapter
+        // Services e Repos
+        val diarioRepo = DiarioRepository(retrofit.create(DiarioService::class.java))
+        val metaRepo = MetaRepository(retrofit.create(MetaService::class.java)) // <--- Novo
 
         // ViewModel
         viewModel = ViewModelProvider(
             this,
-            DiarioViewModelFactory(DiarioRepository(retrofit.create(DiarioService::class.java)))
+            DiarioViewModelFactory(diarioRepo, metaRepo) // <--- Passando os dois
         )[DiarioViewModel::class.java]
 
-        // Observa os dados
+        // Adapter
+        adapter = DiarioAdapter(emptyList()) { grupo ->
+            abrirDetalhesGrupo(grupo)
+        }
+        recycler.layoutManager = LinearLayoutManager(requireContext())
+        recycler.adapter = adapter
+
+        // OBSERVERS
         viewModel.grupos.observe(viewLifecycleOwner) {
             adapter.updateList(it)
         }
 
-        // Carregar dia atual
+        // --- OBSERVA O PROGRESSO (Total vs Meta) ---
+        viewModel.statusCalorias.observe(viewLifecycleOwner) { (consumido, meta) ->
+            val porcentagem = if (meta > 0) (consumido / meta) * 100 else 0.0
+            progressBar.progress = porcentagem.toInt()
+
+            val cStr = String.format("%.0f", consumido)
+            val mStr = String.format("%.0f", meta)
+            txtResumo.text = "$cStr / $mStr kcal"
+
+            // Cor: Laranja normal, Vermelho se estourar a meta
+            if (consumido > meta) {
+                progressBar.progressTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.RED)
+            } else {
+                progressBar.progressTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#FF9800"))
+            }
+        }
+
+        // Navegação de Data
         txtDate.text = selectedDate.toString()
         carregarDiaAtual()
 
@@ -105,16 +125,23 @@ class DiarioFragment : Fragment() {
             carregarDiaAtual()
         }
 
-        // ➕ Botão de adicionar grupo
         btnAddGrupo.setOnClickListener {
             val intent = Intent(requireContext(), CriarGrupoActivity::class.java)
             startActivityForResult(intent, 100)
         }
     }
 
+    // Garante que atualiza ao voltar da tela de Metas ou Detalhes
+    override fun onResume() {
+        super.onResume()
+        carregarDiaAtual()
+    }
+
     private fun carregarDiaAtual() {
-        lifecycleScope.launch {
-            viewModel.carregarDiario(usuarioId, selectedDate.toString())
+        if (usuarioId != 0) {
+            lifecycleScope.launch {
+                viewModel.carregarDiario(usuarioId, selectedDate.toString())
+            }
         }
     }
 
@@ -122,13 +149,12 @@ class DiarioFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
             val nomeGrupo = data?.getStringExtra("nome_grupo") ?: return
-
             lifecycleScope.launch {
                 val novoGrupo = viewModel.criarGrupo(usuarioId, nomeGrupo)
                 if (novoGrupo != null) {
                     Toast.makeText(requireContext(), "Grupo criado!", Toast.LENGTH_SHORT).show()
-                    // Atualiza localmente sem recarregar
-                    viewModel.adicionarGrupoLocal(novoGrupo)
+                    // Recarrega tudo para garantir
+                    carregarDiaAtual()
                 } else {
                     Toast.makeText(requireContext(), "Erro ao criar grupo", Toast.LENGTH_SHORT).show()
                 }
@@ -142,12 +168,4 @@ class DiarioFragment : Fragment() {
         intent.putExtra("grupoNome", grupo.nome)
         startActivity(intent)
     }
-
-    // Adicione este método dentro da classe DiarioFragment
-    override fun onResume() {
-        super.onResume()
-        // Força a atualização da lista sempre que a tela voltar a aparecer
-        carregarDiaAtual()
-    }
 }
-

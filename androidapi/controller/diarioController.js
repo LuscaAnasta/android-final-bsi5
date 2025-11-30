@@ -70,10 +70,22 @@ async function buscarGrupoPorId(id) {
     return queryPromise(sql);
 }
 
+async function obterTotalCalorias(usuario_id, data) {
+    // Fórmula: (caloria_base / porcao_base) * porcao_consumida
+    let sql = `
+        SELECT SUM((caloria_base / porcao_base) * porcao_consumida) as total
+        FROM tb_alimentos_usuario
+        WHERE usuario_id = ${usuario_id}
+        AND DATE(data_registro) = '${data}'
+    `;
+    return queryPromise(sql);
+}
+
 module.exports = {
     listarGrupos,
     listarAlimentos,
     criarGrupo,
     apagarGrupo,
-    buscarGrupoPorId }
-    
+    buscarGrupoPorId,
+    obterTotalCalorias // <--- Adicione aqui
+};

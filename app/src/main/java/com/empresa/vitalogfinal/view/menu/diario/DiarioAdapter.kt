@@ -19,7 +19,7 @@ class DiarioAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GrupoViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_grupo, parent, false)
+            .inflate(R.layout.item_grupo, parent, false) // <--- Tem que ser R.layout.item_grupo
         return GrupoViewHolder(view)
     }
 

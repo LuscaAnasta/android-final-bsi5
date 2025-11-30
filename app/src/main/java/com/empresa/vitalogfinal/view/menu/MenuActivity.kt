@@ -1,10 +1,18 @@
-package com.empresa.vitalogfinal.view.menu  // ajuste se necessário
+package com.empresa.vitalogfinal.view.menu
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Toast // <--- ADICIONADO
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import com.empresa.vitalogfinal.R
+import com.empresa.vitalogfinal.view.menu.meta.MetasActivity
+import com.empresa.vitalogfinal.view.menu.perfil.PerfilActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MenuActivity : AppCompatActivity() {
 
@@ -16,6 +24,28 @@ class MenuActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)
 
+        // ==========================================
+        // 1. VERIFICAÇÃO DE USUÁRIO (DEBUG)
+        // ==========================================
+        val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val usuarioId = prefs.getInt("user_id", 0) // <--- Corrigido: Adicionado 'val'
+
+        if (usuarioId == 0) {
+            Toast.makeText(this, "ERRO CRÍTICO: Usuário ID é 0. Faça Login novamente.", Toast.LENGTH_LONG).show()
+        } else {
+            // Se cair aqui, o login está funcionando!
+            // Toast.makeText(this, "Usuário Logado ID: $usuarioId", Toast.LENGTH_SHORT).show()
+        }
+
+        // ==========================================
+        // 2. CONFIGURAÇÃO DA TOOLBAR
+        // ==========================================
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        // ==========================================
+        // 3. CONFIGURAÇÃO DO BOTTOM NAVIGATION
+        // ==========================================
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
         if (savedInstanceState == null) {
@@ -38,7 +68,7 @@ class MenuActivity : AppCompatActivity() {
         val containerId = R.id.menu_fragment_container
         val transaction = fm.beginTransaction()
 
-        // esconder todos
+        // Esconder todos
         val tags = listOf(FRAG_TAG_DIARIO, FRAG_TAG_AGUA, FRAG_TAG_REL)
         for (t in tags) {
             val f = fm.findFragmentByTag(t)
@@ -58,5 +88,36 @@ class MenuActivity : AppCompatActivity() {
             transaction.show(fragmentToShow)
         }
         transaction.commit()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_topo, menu)
+        return true
+    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            // Clicou em Metas
+            R.id.action_metas -> {
+                startActivity(Intent(this, MetasActivity::class.java))
+                true
+            }
+
+            // Clicou em Perfil (NOVO)
+            R.id.action_perfil -> {
+                // Importe: com.empresa.vitalogfinal.view.menu.perfil.PerfilActivity
+                startActivity(Intent(this, PerfilActivity::class.java))
+                true
+            }
+
+            // Clicou em Sair
+            R.id.action_sair -> {
+                getSharedPreferences("app_prefs", MODE_PRIVATE).edit().clear().apply()
+                finish()
+                // Opcional: Voltar para tela de login
+                // startActivity(Intent(this, LoginActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }

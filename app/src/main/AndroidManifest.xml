@@ -16,6 +16,21 @@
         android:theme="@style/Theme.VitalogFinal"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".view.menu.perfil.AlterarSenhaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.menu.perfil.EditarDadosActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.menu.perfil.PerfilActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.menu.perfil.CompletarCadastroActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.menu.meta.MetasActivity"
+            android:exported="false" />
+        <activity
             android:name=".view.menu.diario.FormularioAlimentoActivity"
             android:exported="false" />
         <activity
