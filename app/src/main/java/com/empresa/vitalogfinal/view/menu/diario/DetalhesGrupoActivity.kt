@@ -47,13 +47,11 @@ class DetalhesGrupoActivity : AppCompatActivity() {
 
         txtNomeGrupo.text = grupoNome
 
-        // 2. Configurar Botão Voltar
+
         btnVoltar.setOnClickListener {
             finish()
         }
 
-        // 3. Configurar Adapter e RecyclerView
-        // AQUI MUDOU: O clique agora chama a função de confirmação de exclusão
         adapter = AlimentosAdapter(emptyList()) { alimento ->
             confirmarExclusaoAlimento(alimento)
         }
@@ -61,7 +59,6 @@ class DetalhesGrupoActivity : AppCompatActivity() {
         recycler.adapter = adapter
         recycler.layoutManager = LinearLayoutManager(this)
 
-        // 4. Configurar ViewModel
         val cred = Credenciais()
         val retrofit = Retrofit.Builder()
             .baseUrl(cred.ip)
@@ -73,17 +70,14 @@ class DetalhesGrupoActivity : AppCompatActivity() {
             DetalhesGrupoViewModelFactory(GrupoRepository(retrofit.create(GrupoService::class.java)))
         )[DetalhesGrupoViewModel::class.java]
 
-        // 5. Observar mudanças na lista
         viewModel.alimentos.observe(this) { lista ->
             adapter.update(lista)
         }
 
-        // 6. Ação do Botão Adicionar
         btnAdd.setOnClickListener {
             adicionarAlimento()
         }
 
-        // 7. Ação do Botão Apagar Grupo
         btnApagarGrupo.setOnClickListener {
             confirmarExclusaoGrupo()
         }
@@ -117,9 +111,6 @@ class DetalhesGrupoActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    // ==========================================
-    // NOVA FUNÇÃO: DIALOGO PARA APAGAR ALIMENTO
-    // ==========================================
     private fun confirmarExclusaoAlimento(alimento: FoodModel) {
         AlertDialog.Builder(this)
             .setTitle("Excluir Alimento")
@@ -149,9 +140,6 @@ class DetalhesGrupoActivity : AppCompatActivity() {
         }
     }
 
-    // ==========================================
-    // DIALOGO PARA APAGAR O GRUPO INTEIRO
-    // ==========================================
     private fun confirmarExclusaoGrupo() {
         AlertDialog.Builder(this)
             .setTitle("Excluir Grupo")

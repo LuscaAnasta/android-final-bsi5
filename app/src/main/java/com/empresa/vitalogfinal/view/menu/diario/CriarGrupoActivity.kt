@@ -23,7 +23,7 @@ class CriarGrupoActivity : AppCompatActivity() {
 
         val btnCancelar = findViewById<Button>(R.id.button_cancelar_grupo)
         btnCancelar.setOnClickListener {
-            finish() // apenas fecha a activity sem criar grupo
+            finish()
         }
 
 

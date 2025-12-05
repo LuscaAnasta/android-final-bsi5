@@ -34,7 +34,6 @@ class EditarDadosActivity : AppCompatActivity() {
 
         usuarioId = getSharedPreferences("app_prefs", Context.MODE_PRIVATE).getInt("user_id", 0)
 
-        // Referências
         edtNome = findViewById(R.id.edt_edit_nome)
         edtSobrenome = findViewById(R.id.edt_edit_sobrenome)
         edtEmail = findViewById(R.id.edt_edit_email)
@@ -45,7 +44,6 @@ class EditarDadosActivity : AppCompatActivity() {
 
         val btnSalvar = findViewById<Button>(R.id.btn_salvar_edicao)
 
-        // Config Retrofit
         val cred = Credenciais()
         val retrofit = Retrofit.Builder()
             .baseUrl(cred.ip)
@@ -53,7 +51,6 @@ class EditarDadosActivity : AppCompatActivity() {
             .build()
         service = retrofit.create(UsuarioService::class.java)
 
-        // Preencher campos com dados atuais
         carregarDadosAtuais()
 
         btnSalvar.setOnClickListener {
@@ -89,7 +86,6 @@ class EditarDadosActivity : AppCompatActivity() {
             return
         }
 
-        // Monta o objeto com os dados da tela + senha de confirmação
         val request = UsuarioUpdateRequest(
             nome = edtNome.text.toString(),
             email = edtEmail.text.toString(),
@@ -105,7 +101,7 @@ class EditarDadosActivity : AppCompatActivity() {
                 val res = service.atualizarPerfil(usuarioId, request)
                 if (res.isSuccessful) {
                     Toast.makeText(this@EditarDadosActivity, "Perfil Atualizado!", Toast.LENGTH_SHORT).show()
-                    finish() // Volta para a tela de Perfil
+                    finish()
                 } else if (res.code() == 401) {
                     Toast.makeText(this@EditarDadosActivity, "Senha incorreta!", Toast.LENGTH_SHORT).show()
                 } else {

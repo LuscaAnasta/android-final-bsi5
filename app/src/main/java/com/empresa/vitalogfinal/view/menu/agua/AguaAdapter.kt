@@ -25,7 +25,6 @@ class AguaAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = lista[position]
 
-        // Formata para exibir sem casas decimais se for inteiro (Ex: 250 ml), ou com se precisar
         val qtdTexto = if (item.quantidade % 1.0 == 0.0) {
             String.format("%.0f", item.quantidade)
         } else {

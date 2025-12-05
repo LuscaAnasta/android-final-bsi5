@@ -7,5 +7,5 @@ data class UsuarioUpdateRequest(
     val data_nascimento: String,
     val peso: Double,
     val altura: Double,
-    val senha_atual: String // Necessário para autorizar a mudança
+    val senha_atual: String
 )

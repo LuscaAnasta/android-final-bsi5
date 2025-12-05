@@ -22,7 +22,6 @@ class FormularioAlimentoActivity : AppCompatActivity() {
 
     private lateinit var repository: AlimentoRepository
 
-    // IDs recebidos da tela anterior
     private var usuarioId = 0
     private var grupoId = 0
 
@@ -40,18 +39,15 @@ class FormularioAlimentoActivity : AppCompatActivity() {
         val txtTotal = findViewById<TextView>(R.id.txt_resultado_calculo)
         val btnSalvar = findViewById<Button>(R.id.btn_salvar_alimento)
 
-        // Verifica se veio dados da Pesquisa (Preenchimento automático)
         val nomeExtra = intent.getStringExtra("nome")
         if (nomeExtra != null) {
             edtNome.setText(nomeExtra)
             edtPorcaoBase.setText(intent.getDoubleExtra("porcao_base", 100.0).toString())
             edtCaloriaBase.setText(intent.getDoubleExtra("caloria_base", 0.0).toString())
 
-            // Focamos direto no campo de consumo para facilitar
             edtConsumido.requestFocus()
         }
 
-        // Configuração do Retrofit
         val cred = Credenciais()
         val retrofit = Retrofit.Builder()
             .baseUrl(cred.ip)
@@ -59,7 +55,6 @@ class FormularioAlimentoActivity : AppCompatActivity() {
             .build()
         repository = AlimentoRepository(retrofit.create(AlimentoService::class.java))
 
-        // Lógica de Cálculo Matemático em Tempo Real
         val textWatcher = object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 calcularTotal(edtPorcaoBase, edtCaloriaBase, edtConsumido, txtTotal)
@@ -72,7 +67,6 @@ class FormularioAlimentoActivity : AppCompatActivity() {
         edtPorcaoBase.addTextChangedListener(textWatcher)
         edtCaloriaBase.addTextChangedListener(textWatcher)
 
-        // Botão Salvar
         btnSalvar.setOnClickListener {
             val nome = edtNome.text.toString()
             val pBase = edtPorcaoBase.text.toString().toDoubleOrNull() ?: 0.0
@@ -101,11 +95,9 @@ class FormularioAlimentoActivity : AppCompatActivity() {
     }
 
     private fun salvarNoBanco(nome: String, calBase: Double, porcaoBase: Double, consumido: Double) {
-        // Criar objeto FoodModel
-        // ATENÇÃO: Seu backend exige usuario_id. Certifique-se que adicionou no FoodModel.
         val novoAlimento = FoodModel(
             id = 0,
-            usuario_id = usuarioId, // <--- Aqui passamos o ID que pegamos da Intent
+            usuario_id = usuarioId,
             grupo_id = grupoId,
             nome = nome,
             caloria_base = calBase,
@@ -113,10 +105,6 @@ class FormularioAlimentoActivity : AppCompatActivity() {
             porcao_base = porcaoBase,
             data_registro = ""
         )
-
-        // OBS: Se você ainda NÃO atualizou o FoodModel para ter usuario_id,
-        // o código abaixo vai compilar, mas o backend vai dar erro 500
-        // porque vai tentar inserir NULL na coluna usuario_id.
 
         lifecycleScope.launch {
             val sucesso = repository.salvar(novoAlimento)

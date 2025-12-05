@@ -48,51 +48,48 @@ class DiarioFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. Recupera ID
+
         val prefs = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         usuarioId = prefs.getInt("user_id", 0)
 
-        // Referências Visuais
+
         val btnPrev = view.findViewById<Button>(R.id.btn_prev_day)
         val btnNext = view.findViewById<Button>(R.id.btn_next_day)
         val btnAddGrupo = view.findViewById<Button>(R.id.btn_add_grupo)
         val txtDate = view.findViewById<TextView>(R.id.txt_selected_date)
         val recycler = view.findViewById<RecyclerView>(R.id.recycler_diario)
 
-        // Novos campos de progresso
+
         val txtResumo = view.findViewById<TextView>(R.id.txt_resumo_calorias)
         val progressBar = view.findViewById<ProgressBar>(R.id.progress_calorias)
 
-        // Configuração Retrofit
         val cred = Credenciais()
         val retrofit = Retrofit.Builder()
             .baseUrl(cred.ip)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        // Services e Repos
         val diarioRepo = DiarioRepository(retrofit.create(DiarioService::class.java))
         val metaRepo = MetaRepository(retrofit.create(MetaService::class.java)) // <--- Novo
 
-        // ViewModel
         viewModel = ViewModelProvider(
             this,
             DiarioViewModelFactory(diarioRepo, metaRepo) // <--- Passando os dois
         )[DiarioViewModel::class.java]
 
-        // Adapter
+
         adapter = DiarioAdapter(emptyList()) { grupo ->
             abrirDetalhesGrupo(grupo)
         }
         recycler.layoutManager = LinearLayoutManager(requireContext())
         recycler.adapter = adapter
 
-        // OBSERVERS
+
         viewModel.grupos.observe(viewLifecycleOwner) {
             adapter.updateList(it)
         }
 
-        // --- OBSERVA O PROGRESSO (Total vs Meta) ---
+
         viewModel.statusCalorias.observe(viewLifecycleOwner) { (consumido, meta) ->
             val porcentagem = if (meta > 0) (consumido / meta) * 100 else 0.0
             progressBar.progress = porcentagem.toInt()
@@ -109,7 +106,6 @@ class DiarioFragment : Fragment() {
             }
         }
 
-        // Navegação de Data
         txtDate.text = selectedDate.toString()
         carregarDiaAtual()
 

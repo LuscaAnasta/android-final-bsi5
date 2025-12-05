@@ -14,7 +14,6 @@ interface HidratacaoService {
         @Path("data") data: String
     ): Response<List<HidratacaoModel>>
 
-    // CORREÇÃO AQUI: Trocamos Map<String, Any> por HidratacaoRequest
     @POST("hidratacao")
     suspend fun adicionar(@Body corpo: HidratacaoRequest): Response<ResponseBody>
 

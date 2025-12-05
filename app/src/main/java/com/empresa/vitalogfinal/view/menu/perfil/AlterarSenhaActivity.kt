@@ -28,7 +28,7 @@ class AlterarSenhaActivity : AppCompatActivity() {
 
         val usuarioId = getSharedPreferences("app_prefs", Context.MODE_PRIVATE).getInt("user_id", 0)
 
-        // Config Retrofit
+
         val cred = Credenciais()
         val retrofit = Retrofit.Builder()
             .baseUrl(cred.ip)
@@ -51,7 +51,7 @@ class AlterarSenhaActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Envia para o Backend
+
             lifecycleScope.launch {
                 try {
                     val request = SenhaUpdateRequest(atual, nova)
@@ -59,9 +59,9 @@ class AlterarSenhaActivity : AppCompatActivity() {
 
                     if (res.isSuccessful) {
                         Toast.makeText(this@AlterarSenhaActivity, "Senha alterada com sucesso!", Toast.LENGTH_SHORT).show()
-                        finish() // Fecha a tela
+                        finish()
                     } else if (res.code() == 401) {
-                        // Backend retornou erro de senha incorreta
+
                         Toast.makeText(this@AlterarSenhaActivity, "A senha atual está incorreta", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(this@AlterarSenhaActivity, "Erro no servidor", Toast.LENGTH_SHORT).show()

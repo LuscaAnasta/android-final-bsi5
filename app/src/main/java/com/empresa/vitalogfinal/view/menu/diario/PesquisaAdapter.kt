@@ -13,7 +13,6 @@ class PesquisaAdapter(
     private val onClick: (Alimento) -> Unit
 ) : RecyclerView.Adapter<PesquisaAdapter.ViewHolder>() {
 
-    // Reutilizando seu layout item_alimento existente
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val nome: TextView = view.findViewById(R.id.txt_nome_alimento)
         val info: TextView = view.findViewById(R.id.txt_info_alimento)
@@ -28,7 +27,6 @@ class PesquisaAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = lista[position]
         holder.nome.text = item.nome
-        // Como agora é Double, podemos formatar bonitinho
         holder.info.text = "${item.porcao}g • ${item.caloria} kcal"
 
         holder.itemView.setOnClickListener { onClick(item) }

@@ -32,14 +32,12 @@ interface UsuarioService {
     @GET("usuario/{id}")
     suspend fun getPerfil(@Path("id") id: Int): Response<Usuario>
 
-    // Atualizar dados gerais (Nome, Peso, Altura...)
     @PUT("usuario/{id}")
     suspend fun atualizarPerfil(
         @Path("id") id: Int,
         @Body dados: UsuarioUpdateRequest
     ): Response<Map<String, String>>
 
-    // Atualizar apenas a senha
     @PATCH("usuario/senha/{id}")
     suspend fun alterarSenha(
         @Path("id") id: Int,

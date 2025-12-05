@@ -19,11 +19,9 @@ class DiarioRepository(
         return if (response.isSuccessful) response.body() else null
     }
 
-    // --- NOVA FUNÇÃO ---
     suspend fun getTotalCalorias(usuarioId: Int, data: String): Double {
         return try {
             val res = diarioService.getTotalCalorias(usuarioId, data)
-            // Se der sucesso retorna o total, senão retorna 0.0
             if (res.isSuccessful) res.body()?.total ?: 0.0 else 0.0
         } catch (e: Exception) {
             0.0

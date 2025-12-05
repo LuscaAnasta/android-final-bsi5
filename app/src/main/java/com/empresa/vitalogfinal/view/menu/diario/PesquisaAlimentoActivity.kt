@@ -30,7 +30,6 @@ class PesquisaAlimentoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pesquisa_alimento)
 
-        // Recebe IDs da tela anterior (DetalhesGrupoActivity)
         usuarioId = intent.getIntExtra("usuarioId", 0)
         grupoId = intent.getIntExtra("grupoId", 0)
 
@@ -39,7 +38,6 @@ class PesquisaAlimentoActivity : AppCompatActivity() {
         val btnNovo = findViewById<Button>(R.id.btn_add_novo_manual)
         val recycler = findViewById<RecyclerView>(R.id.recycler_pesquisa)
 
-        // Configuração Retrofit
         val cred = Credenciais()
         val retrofit = Retrofit.Builder()
             .baseUrl(cred.ip)
@@ -48,7 +46,6 @@ class PesquisaAlimentoActivity : AppCompatActivity() {
 
         repository = AlimentoRepository(retrofit.create(AlimentoService::class.java))
 
-        // Configuração da Lista
         adapter = PesquisaAdapter(emptyList()) { alimentoSelecionado ->
             irParaFormulario(alimentoSelecionado)
         }
@@ -56,7 +53,6 @@ class PesquisaAlimentoActivity : AppCompatActivity() {
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = adapter
 
-        // Ação de Pesquisar
         btnPesquisar.setOnClickListener {
             val termo = edtBusca.text.toString().trim()
             if (termo.isNotEmpty()) {
@@ -72,9 +68,8 @@ class PesquisaAlimentoActivity : AppCompatActivity() {
             }
         }
 
-        // Ação de Cadastrar Novo (Manual)
         btnNovo.setOnClickListener {
-            irParaFormulario(null) // Passa null para indicar cadastro do zero
+            irParaFormulario(null)
         }
     }
 
@@ -89,8 +84,6 @@ class PesquisaAlimentoActivity : AppCompatActivity() {
             intent.putExtra("porcao_base", alimento.porcao)
         }
         startActivity(intent)
-        // Não damos finish() aqui se você quiser que o usuário possa voltar para a pesquisa
-        // Mas geralmente, ao salvar, fechamos tudo.
         finish()
     }
 }

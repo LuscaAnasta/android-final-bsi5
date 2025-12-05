@@ -28,7 +28,6 @@ class MetasAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = lista[position]
 
-        // Formatação do título baseado no tipo
         holder.titulo.text = if (item.tipo == "caloria") "Calorias (kcal)" else "Hidratação (ml)"
         holder.valor.text = item.meta.toString()
 

@@ -33,7 +33,6 @@ class PerfilActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         usuarioId = prefs.getInt("user_id", 0)
 
-        // Referências Visuais
         txtNome = findViewById(R.id.txt_perfil_nome)
         txtEmail = findViewById(R.id.txt_perfil_email)
         txtPeso = findViewById(R.id.txt_perfil_peso)
@@ -44,22 +43,20 @@ class PerfilActivity : AppCompatActivity() {
         val btnAlterarSenha = findViewById<Button>(R.id.btn_alterar_senha) // Novo botão
         val btnSair = findViewById<Button>(R.id.btn_sair_app)
 
-        // Ação 1: Editar Dados Gerais (Substitui o antigo CompletarCadastro)
+
         btnEditar.setOnClickListener {
             startActivity(Intent(this, EditarDadosActivity::class.java))
         }
 
-        // Ação 2: Alterar Senha (Novo)
         btnAlterarSenha.setOnClickListener {
             startActivity(Intent(this, AlterarSenhaActivity::class.java))
         }
 
-        // Ação 3: Sair (Logout)
         btnSair.setOnClickListener {
             prefs.edit().clear().apply()
 
             val intent = Intent(this, LoginActivity::class.java)
-            // Limpa a pilha de telas para o usuário não poder voltar
+
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
@@ -70,7 +67,6 @@ class PerfilActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Recarrega os dados caso o usuário tenha editado e voltado
         carregarDados()
     }
 

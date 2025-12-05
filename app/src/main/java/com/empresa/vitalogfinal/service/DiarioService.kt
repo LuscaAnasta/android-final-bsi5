@@ -23,7 +23,7 @@ interface DiarioService {
         @Body request: CriarGrupoRequest
     ): Response<GrupoModel>
 
-    // --- NOVA ROTA ---
+
     @GET("diario/total/{usuarioId}/{data}")
     suspend fun getTotalCalorias(
         @Path("usuarioId") usuarioId: Int,

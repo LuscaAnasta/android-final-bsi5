@@ -29,15 +29,14 @@ class MetasActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_metas) // Crie este layout com um RecyclerView (id: recycler_metas)
-
+        setContentView(R.layout.activity_metas)
         val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         usuarioId = prefs.getInt("user_id", 0)
 
         val recycler = findViewById<RecyclerView>(R.id.recycler_metas)
         recycler.layoutManager = LinearLayoutManager(this)
 
-        // Retrofit
+
         val cred = Credenciais()
         val retrofit = Retrofit.Builder()
             .baseUrl(cred.ip)
@@ -55,27 +54,26 @@ class MetasActivity : AppCompatActivity() {
 
     private fun carregarMetas() {
         lifecycleScope.launch {
-            // Busca metas salvas no banco
+
             val metasSalvas = repository.listar(usuarioId, dataHoje)
 
-            // Lógica: Misturar metas salvas com os padrões
+
             val listaFinal = mutableListOf<MetaModel>()
 
-            // 1. Calorias
             val metaCaloria = metasSalvas.find { it.tipo == "caloria" }
             if (metaCaloria != null) {
                 listaFinal.add(metaCaloria)
             } else {
-                // Padrão 2000 se não existir no banco
+
                 listaFinal.add(MetaModel(0, usuarioId, "caloria", 2000.0))
             }
 
-            // 2. Hidratação
+
             val metaAgua = metasSalvas.find { it.tipo == "hidratacao" }
             if (metaAgua != null) {
                 listaFinal.add(metaAgua)
             } else {
-                // Padrão 2000 se não existir no banco
+
                 listaFinal.add(MetaModel(0, usuarioId, "hidratacao", 2000.0))
             }
 

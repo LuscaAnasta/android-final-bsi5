@@ -1,9 +1,9 @@
 package com.empresa.vitalogfinal.model.meta
 
 data class MetaModel(
-    val id: Int = 0, // Pode ser 0 se for uma meta padrão não salva ainda
+    val id: Int = 0,
     val usuario_id: Int,
-    val tipo: String, // "caloria" ou "hidratacao"
+    val tipo: String,
     val meta: Double,
     val data_registro: String? = null
 )

@@ -46,11 +46,11 @@ class AguaFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Recupera ID do usuário
+
         val prefs = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         usuarioId = prefs.getInt("user_id", 0)
 
-        // Referências Visuais
+
         val txtData = view.findViewById<TextView>(R.id.txt_agua_data)
         val txtTotal = view.findViewById<TextView>(R.id.txt_agua_total)
         val recycler = view.findViewById<RecyclerView>(R.id.recycler_agua)
@@ -58,18 +58,18 @@ class AguaFragment : Fragment() {
         val btnPrev = view.findViewById<Button>(R.id.btn_agua_prev)
         val btnNext = view.findViewById<Button>(R.id.btn_agua_next)
 
-        // Novos elementos de progresso
+
         val progressBar = view.findViewById<ProgressBar>(R.id.progress_agua)
         val txtStatusMeta = view.findViewById<TextView>(R.id.txt_status_meta)
 
-        // Configura Retrofit
+
         val cred = Credenciais()
         val retrofit = Retrofit.Builder()
             .baseUrl(cred.ip)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        // Services e Repositories
+
         val serviceAgua = retrofit.create(HidratacaoService::class.java)
         val serviceMeta = retrofit.create(MetaService::class.java) // <--- Novo
 
@@ -88,13 +88,12 @@ class AguaFragment : Fragment() {
         recycler.layoutManager = LinearLayoutManager(requireContext())
         recycler.adapter = adapter
 
-        // --- OBSERVERS ---
+
 
         viewModel.lista.observe(viewLifecycleOwner) {
             adapter.updateList(it)
         }
 
-        // Observa TOTAL e atualiza a barra
         viewModel.total.observe(viewLifecycleOwner) { total ->
             val metaAtual = viewModel.metaDiaria.value ?: 2000.0
             atualizarBarra(progressBar, txtStatusMeta, total, metaAtual)
@@ -109,7 +108,6 @@ class AguaFragment : Fragment() {
             atualizarBarra(progressBar, txtStatusMeta, totalAtual, meta)
         }
 
-        // Navegação
         txtData.text = selectedDate.toString()
         carregarDados()
 
@@ -130,7 +128,6 @@ class AguaFragment : Fragment() {
         }
     }
 
-    // Função auxiliar para atualizar a UI da barra
     private fun atualizarBarra(bar: ProgressBar, txt: TextView, total: Double, meta: Double) {
         val porcentagem = if (meta > 0) (total / meta) * 100 else 0.0
         bar.progress = porcentagem.toInt()
@@ -139,7 +136,7 @@ class AguaFragment : Fragment() {
         val mStr = String.format("%.0f", meta)
         txt.text = "$tStr / $mStr ml"
 
-        // Muda cor da barra se atingiu a meta (Verde) ou não (Azul)
+
         if (total >= meta) {
             bar.progressTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.GREEN)
         } else {
@@ -154,10 +151,6 @@ class AguaFragment : Fragment() {
             }
         }
     }
-
-    // --- MANTENHA AS FUNÇÕES DE DIALOG IGUAIS AS QUE VOCÊ JÁ TINHA ---
-    // mostrarDialogAdicionar() e confirmarExclusao() continuam iguais...
-    // Vou omitir aqui para economizar espaço, mas mantenha-as no arquivo.
 
     private fun mostrarDialogAdicionar() {
         val builder = AlertDialog.Builder(requireContext())
@@ -209,8 +202,7 @@ class AguaFragment : Fragment() {
     }
     override fun onResume() {
         super.onResume()
-        // Toda vez que você voltar da tela de Metas (ou qualquer outra),
-        // ele vai bater no banco de novo para pegar a meta atualizada.
+
         carregarDados()
     }
 }

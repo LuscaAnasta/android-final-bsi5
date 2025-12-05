@@ -24,28 +24,20 @@ class MenuActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)
 
-        // ==========================================
-        // 1. VERIFICAÇÃO DE USUÁRIO (DEBUG)
-        // ==========================================
         val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val usuarioId = prefs.getInt("user_id", 0) // <--- Corrigido: Adicionado 'val'
 
         if (usuarioId == 0) {
             Toast.makeText(this, "ERRO CRÍTICO: Usuário ID é 0. Faça Login novamente.", Toast.LENGTH_LONG).show()
         } else {
-            // Se cair aqui, o login está funcionando!
-            // Toast.makeText(this, "Usuário Logado ID: $usuarioId", Toast.LENGTH_SHORT).show()
+
         }
 
-        // ==========================================
-        // 2. CONFIGURAÇÃO DA TOOLBAR
-        // ==========================================
+
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
-        // ==========================================
-        // 3. CONFIGURAÇÃO DO BOTTOM NAVIGATION
-        // ==========================================
+
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
         if (savedInstanceState == null) {
@@ -68,7 +60,6 @@ class MenuActivity : AppCompatActivity() {
         val containerId = R.id.menu_fragment_container
         val transaction = fm.beginTransaction()
 
-        // Esconder todos
         val tags = listOf(FRAG_TAG_DIARIO, FRAG_TAG_AGUA, FRAG_TAG_REL)
         for (t in tags) {
             val f = fm.findFragmentByTag(t)
@@ -96,25 +87,22 @@ class MenuActivity : AppCompatActivity() {
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            // Clicou em Metas
+
             R.id.action_metas -> {
                 startActivity(Intent(this, MetasActivity::class.java))
                 true
             }
-
-            // Clicou em Perfil (NOVO)
             R.id.action_perfil -> {
-                // Importe: com.empresa.vitalogfinal.view.menu.perfil.PerfilActivity
+
                 startActivity(Intent(this, PerfilActivity::class.java))
                 true
             }
 
-            // Clicou em Sair
+
             R.id.action_sair -> {
                 getSharedPreferences("app_prefs", MODE_PRIVATE).edit().clear().apply()
                 finish()
-                // Opcional: Voltar para tela de login
-                // startActivity(Intent(this, LoginActivity::class.java))
+
                 true
             }
             else -> super.onOptionsItemSelected(item)
